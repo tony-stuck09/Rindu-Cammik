@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Untuk Cammik</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background: radial-gradient(circle at 50% 15%, #2a1030 0%, #14091c 45%, #07040b 100%);
+    color:#ffe9f3;
+    font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+    display:grid; place-items:center;
+    overflow:hidden;
+  }
+
+  /* lapisan hati */
+  #hearts{position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden}
+  .heart{
+    position:absolute; bottom:-50px;
+    animation-name:rise; animation-timing-function:linear; animation-fill-mode:forwards;
+    opacity:0; will-change:transform,opacity;
+    filter:drop-shadow(0 0 8px rgba(255,120,170,.55));
+  }
+  @keyframes rise{
+    0%  {transform:translateY(0) scale(.5) rotate(0deg); opacity:0}
+    12% {opacity:.9}
+    100%{transform:translateY(-115vh) scale(1.15) rotate(25deg); opacity:0}
+  }
+
+  /* kartu pesan */
+  .card{
+    position:relative; z-index:2;
+    text-align:center;
+    max-width:min(92vw, 660px);
+    padding:28px 22px 40px;
+  }
+  .name{
+    margin:0 0 26px;
+    font-size:clamp(34px, 9vw, 66px);
+    font-weight:700;
+    letter-spacing:.05em;
+    background:linear-gradient(90deg,#ff8fb1,#ffd6a5,#c9a7ff,#ff8fb1);
+    background-size:250% auto;
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    animation:shine 7s linear infinite;
+    filter:drop-shadow(0 0 26px rgba(255,143,177,.35));
+  }
+  @keyframes shine{ to{ background-position:250% center } }
+
+  .msg{
+    margin:0;
+    min-height:4.6em;
+    font-size:clamp(16px, 4.2vw, 22px);
+    line-height:1.65;
+    transition:opacity .35s ease;
+    text-shadow:0 0 20px rgba(255,143,177,.28);
+  }
+  .cursor{
+    display:inline-block;
+    margin-left:2px;
+    color:#ff8fb1;
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{opacity:0} }
+
+  .controls{margin-top:34px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+  .btn{
+    padding:11px 26px;
+    border-radius:999px;
+    border:1px solid rgba(255,143,177,.5);
+    background:rgba(255,143,177,.08);
+    color:#ffd7e5;
+    font-size:14px; letter-spacing:.06em;
+    cursor:pointer;
+    transition:.25s ease;
+  }
+  .btn:hover{ background:rgba(255,143,177,.2); transform:translateY(-2px) }
+  .btn:active{ transform:translateY(0) }
+
+  @media (prefers-reduced-motion: reduce){
+    .heart{display:none}
+    .name{animation:none}
+  }
+</style>
+</head>
+<body>
+
+  <div id="hearts"></div>
+
+  <main class="card">
+    <h1 class="name">Dek Cammik</h1>
+    <p class="msg" id="msg"><span id="text"></span><span class="cursor">|</span></p>
+    <div class="controls">
+      <button class="btn" id="replay">Ulangi</button>
+      <button class="btn" id="music">♪ Musik: ON</button>
+    </div>
+  </main>
+
+<script>
+  /* ====== 1. UBAH TEKS DI SINI ====== */
+  const lines = [
+    "Cammik, kapan kita keluar dek 🥺.",
+    "Da rindu abg 😔,",
+    "sendiri la aku ini selama 45 hari 😔",
+    "siapala temanku hmmm 🥺🥺"
+  ];
+  /* ================================== */
+
+  const textEl  = document.getElementById('text');
+  const msgEl   = document.getElementById('msg');
+  const btn     = document.getElementById('replay');
+  const musicBtn= document.getElementById('music');
+  const heartsEl= document.getElementById('hearts');
+
+  let running = false;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function typeLine(line, speed = 55){
+    for (const ch of line){
+      textEl.textContent += ch;
+      await sleep(speed + Math.random() * 45);
+    }
+  }
+
+  async function play(){
+    if (running) return;
+    running = true;
+    btn.style.visibility = 'hidden';
+
+    textEl.textContent = '';
+    msgEl.style.opacity = 1;
+
+    for (let i = 0; i < lines.length; i++){
+      await typeLine(lines[i]);
+      await sleep(i === lines.length - 1 ? 1600 : 950);
+
+      if (i < lines.length - 1){
+        msgEl.style.opacity = 0;
+        await sleep(380);
+        textEl.textContent = '';
+        msgEl.style.opacity = 1;
+      }
+    }
+
+    running = false;
+    btn.style.visibility = 'visible';
+  }
+
+  /* ====== 2. HATI BETEBANGAN ====== */
+  const glyphs = ['♥','♥','♥','♥','💗'];
+  function spawnHeart(){
+    const h = document.createElement('span');
+    h.className = 'heart';
+    h.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.fontSize = (12 + Math.random() * 24) + 'px';
+    h.style.animationDuration = (6 + Math.random() * 7) + 's';
+    h.style.color = `hsl(${325 + Math.random() * 40}, 92%, ${66 + Math.random() * 16}%)`;
+    heartsEl.appendChild(h);
+    h.addEventListener('animationend', () => h.remove());
+  }
+  setInterval(spawnHeart, 300);
+  for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 250);
+
+  /* ====== 3. MUSIK MESRA (generated, tanpa file) ====== */
+  let actx = null, master = null, musicOn = true, timer = null;
+  let nextChord = 0, nextMel = 0, chordIdx = 0;
+
+  const CHORDS = [
+    [174.61, 220.00, 261.63, 329.63], // Fmaj7  : F3 A3 C4 E4
+    [130.81, 196.00, 261.63, 329.63], // C     : C3 G3 C4 E4
+    [146.83, 174.61, 220.00, 261.63], // Dm7    : D3 F3 A3 C4
+    [116.54, 146.83, 174.61, 220.00]  // Bbmaj7 : Bb2 D3 F3 A3
+  ];
+  const MELODY = [440.00, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00];
+
+  function makeImpulse(seconds, decay){
+    const rate = actx.sampleRate, len = Math.floor(rate * seconds);
+    const buf = actx.createBuffer(2, len, rate);
+    for (let c = 0; c < 2; c++){
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < len; i++){
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+      }
+    }
+    return buf;
+  }
+
+  function initAudio(){
+    if (actx) return;
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+
+    master = actx.createGain();
+    master.gain.value = 0;
+
+    const rev = actx.createConvolver();
+    rev.buffer = makeImpulse(2.8, 2.6);
+    const wet = actx.createGain();
+    wet.gain.value = 0.5;
+
+    master.connect(actx.destination);
+    master.connect(rev);
+    rev.connect(wet);
+    wet.connect(actx.destination);
+
+    master.gain.linearRampToValueAtTime(0.20, actx.currentTime + 5);
+
+    nextChord = actx.currentTime + 0.2;
+    nextMel   = actx.currentTime + 1.0;
+    timer = setInterval(scheduler, 60);
+  }
+
+  function pad(freq, t, dur){
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    const f = actx.createBiquadFilter();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    f.type = 'lowpass';
+    f.frequency.value = 1100;
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.10, t + 1.6);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+    o.connect(f); f.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.1);
+  }
+
+  function bell(freq, t){
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = freq;
+
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.055, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + 2.3);
+  }
+
+  function scheduler(){
+    if (!actx || actx.state !== 'running') return;
+    const ahead = actx.currentTime + 0.6;
+
+    while (nextChord < ahead){
+      const chord = CHORDS[chordIdx % CHORDS.length];
+      chord.forEach((f, i) => pad(f, nextChord + i * 0.05, 6.5));
+      nextChord += 5.0;
+      chordIdx++;
+    }
+
+    while (nextMel < ahead){
+      if (Math.random() < 0.7){
+        const n = MELODY[Math.floor(Math.random() * MELODY.length)];
+        bell(n, nextMel);
+      }
+      nextMel += 1.25;
+    }
+  }
+
+  function toggleMusic(){
+    initAudio();
+    if (actx.state === 'suspended') actx.resume();
+
+    musicOn = !musicOn;
+    const t = actx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(musicOn ? 0.400 : 0.0001, t + (musicOn ? 2 : 1));
+    musicBtn.textContent = musicOn ? '♪ Musik: ON' : '♪ Musik: OFF';
+  }
+
+  /* ====== 4. WIRING ====== */
+  btn.addEventListener('click', e => { e.stopPropagation(); play(); });
+  musicBtn.addEventListener('click', e => { e.stopPropagation(); toggleMusic(); });
+
+  function startAll(){
+    initAudio();           // browser wajib gesture dulu
+    if (actx.state === 'suspended') actx.resume();
+    play();
+  }
+
+  document.body.addEventListener('click', e => {
+    if (e.target === btn || e.target === musicBtn) return;
+    startAll();
+  });
+
+  /* Musik & animasi mulai saat interaksi pertama (klik/tap di mana saja) */
+</script>
+</body>
+</html>
